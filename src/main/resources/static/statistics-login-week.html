@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>Gocheck</title>
+    <link rel="stylesheet" media="all" href="css/main.css" />
+<script src="js/jquery.min.js"></script>
+<script src="js/main.js"></script>
+    <script src="js/echarts.min.js"></script>
+    <script src="js/walden.js"></script>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="content">
+            <ul class="nav navbar-nav">
+                <li><a href="statistics-login.html">今日</a></li>
+                <li class="active"><a href="statistics-login-week.html">7天</a></li>
+                <li><a href="statistics-login-month.html">30天</a></li>
+            </ul>
+            <div class="theme-panel">
+                <div class="panel-title"><i class="icon-line bg-blue"></i>周新增用户数：<span id="registCount"></span></div>
+                <div class="charts-bar">
+                    <div id="chart-add" class="chart" style="width: 100%; height: 300px;"> </div>
+                </div>
+            </div>
+            <div class="theme-panel">
+                <div class="panel-title"><i class="icon-line bg-blue"></i><span id="showPersonalDate"></span>个人注册量</div>
+                <div class="charts-bar">
+                    <div id="chart-register" class="chart" style="width: 100%; height: 300px;"> </div>
+                </div>
+            </div>
+            <div class="theme-panel mb1">
+                <div class="panel-title"><i class="icon-line bg-green"></i><span id="showOrgDate"></span>机构注册量</div>
+                <div class="charts-bar">
+                    <div id="chart-orgregister" class="chart" style="width: 100%; height: 300px;"> </div>
+                </div>
+            </div>
+            <div class="theme-panel">
+                <div class="charts-bar">
+                    <div id="chart-pay" class="chart" style="width: 100%; height: 300px;"> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <img src="images/logo.png" alt="">
+    </footer>
+    <script>
+        //饼图公用配置
+        var echartData=[];
+        pieoption = {
+            legend: {
+                left: 'center',
+                top: '40',
+                formatter: function (name) {
+                    for (var i = 0; i < echartData.length; i++) {
+                        var el = echartData[i];
+                        if (el.name === name) {
+                            return name + '：' + el.value;
+                        }
+                    }
+                    return name;
+                }
+            },
+            calculable: true,
+            series: [{
+                name: '',
+                type: 'pie',
+                radius: '55%',
+                center: ['50%', '60%'],
+                itemStyle: {
+                    normal: {
+                        label: {
+                            show: true,
+                            position: 'inner',
+                            formatter: '{d}%'
+                        }
+                    }
+
+                }
+            }]
+        };
+        
+        //柱状图公用配置
+        baroption = {
+            grid:{
+                left:10,
+                right:10,
+                containLabel:true
+            },
+            xAxis: [{
+                type: 'category',
+                axisTick: {
+                    alignWithLabel: true
+                }
+            }],
+            yAxis: [{
+                type: 'value'
+            }],
+            series: [{
+                name: '注册量',
+                type: 'bar',
+                barWidth: '60%',
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'top',
+                        color: '#333'
+                    }
+                }
+            }]
+        }
+        
+$(document).ready(function(){
+	$.ajax({
+		type:"post",
+		url:"statisticsController/getWeekRegistData.do",
+		data:{},
+		dataType:"json",
+		success: function (data){
+				$("#registCount").text(data.data.registCount);  
+				$("#showPersonalDate").text(data.data.showDate);
+				$("#showOrgDate").text(data.data.showDate);
+	
+
+        //新增用户数
+        var Chartadd = echarts.init(document.getElementById('chart-add'),'walden');
+        Chartadd.setOption(pieoption);
+        echartData = [{value: data.data.personalRegistCount,name: '个人'}, {value: data.data.orgRegistCount,name: '机构'}];
+        Chartadd.setOption({
+            legend: {
+                data: ['个人', '机构']
+            },
+            series: [{
+                data: echartData
+            }]
+        });
+        //付费数据图
+        var Chartpay = echarts.init(document.getElementById('chart-pay'),'walden');
+        Chartpay.setOption(pieoption);
+        echartData = [{value: data.data.payUsers,name: '付费'}, {value: data.data.freeUsers,name: '免费'}];
+        Chartpay.setOption({
+            legend: {
+                data: ['付费', '免费']
+            },
+            series: [{
+                data: echartData
+            }]
+        });
+        
+        //个人注册量
+        var Chartregister = echarts.init(document.getElementById('chart-register'),'walden');
+        Chartregister.setOption(baroption);
+        Chartregister.setOption({
+            xAxis: [{
+                data: [ data.data.personalRegistDetails[0].date, data.data.personalRegistDetails[1].date, data.data.personalRegistDetails[2].date, data.data.personalRegistDetails[3].date, data.data.personalRegistDetails[4].date, data.data.personalRegistDetails[5].date, data.data.personalRegistDetails[6].date]
+            }],
+            series: [{
+            	itemStyle:{
+                    normal:{
+                        color: function(param) {
+                            if (param.name == data.data.personalRegistDetails[6].date) {
+                                return '#f77272'
+                            } else {
+                                return '#3fb1e3'
+                            }
+                        }
+                    }
+                },
+                data: [ data.data.personalRegistDetails[0].count, data.data.personalRegistDetails[1].count, data.data.personalRegistDetails[2].count, data.data.personalRegistDetails[3].count, data.data.personalRegistDetails[4].count, data.data.personalRegistDetails[5].count, data.data.personalRegistDetails[6].count]
+            }]
+        });
+        var ChartOrgregister = echarts.init(document.getElementById('chart-orgregister'),'walden');
+        ChartOrgregister.setOption(baroption);
+        ChartOrgregister.setOption({
+        	xAxis: [{
+                data: [data.data.orgRegistDetails[0].date, data.data.orgRegistDetails[1].date, data.data.orgRegistDetails[2].date, data.data.orgRegistDetails[3].date, data.data.orgRegistDetails[4].date, data.data.orgRegistDetails[5].date, data.data.orgRegistDetails[6].date]
+            }],
+            series: [{
+            	itemStyle:{
+                    normal:{
+                        color: function(param) {
+                            if (param.name == data.data.orgRegistDetails[6].date) {
+                                return '#f77272'
+                            } else {
+                                return '#3fb1e3'
+                            }
+                        }
+                    }
+                },
+                data: [data.data.orgRegistDetails[0].count, data.data.orgRegistDetails[1].count, data.data.orgRegistDetails[2].count, data.data.orgRegistDetails[3].count, data.data.orgRegistDetails[4].count, data.data.orgRegistDetails[5].count, data.data.orgRegistDetails[6].count]
+            }]
+        });
+        
+        
+		}   
+	});
+});        
+    </script>
+</body>
+
+</html>

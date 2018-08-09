@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>Gocheck</title>
+    <link rel="stylesheet" media="all" href="css/main.css" />
+<script src="js/jquery.min.js"></script>
+<script src="js/main.js"></script>
+    <script src="js/echarts.min.js"></script>
+    <script src="js/walden.js"></script>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="content">
+            <ul class="nav navbar-nav">
+                <li><a href="statistics-check.html">今日</a></li>
+                <li><a href="statistics-check-week.html">7天</a></li>
+                <li class="active"><a href="statistics-check-month.html">30天</a></li>
+            </ul>
+            <div class="theme-panel">
+                <div class="panel-title"><i class="icon-line bg-blue"></i>月检测量：<span id="total"></span></div>
+                <div class="charts-bar">
+                    <div id="chart-check" class="chart" style="width: 100%; height: 300px;"> </div>
+                </div>
+            </div>
+            <div class="theme-panel">
+                <div class="panel-title"><i class="icon-line bg-blue"></i><span id="indDate"></span>个人检测量</div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>日期</th>
+                            <th>检测量</th>
+                        </tr>
+                    </thead>
+                    <tbody id="indTable">
+                    </tbody>
+                </table>
+            </div>
+            <div class="theme-panel">
+                <div class="panel-title"><i class="icon-line bg-green"></i><span id="stuDate"></span>机构检测量</div>
+                <table class="table">
+                    <thead >
+                        <tr>
+                            <th>序号</th>
+                            <th>日期</th>
+                            <th>检测量</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stuTable">
+                    </tbody>
+                </table>
+            </div>
+            <div class="theme-panel">
+                <div class="panel-title"><i class="icon-line bg-violet"></i>相似度结果分布图</div>
+                <div class="charts-bar">
+                    <div id="chart-similarity" class="chart" style="width: 100%; height: 300px;"> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <img src="images/logo.png" alt="">
+    </footer>
+
+    <script>
+        //饼图配置
+        var echartData=[];
+        pieoption = {
+            legend: {
+                left: 'center',
+                top: '40',
+                formatter: function (name) {
+                    for (var i = 0; i < echartData.length; i++) {
+                        var el = echartData[i];
+                        if (el.name === name) {
+                            return name + '：' + el.value;
+                        }
+                    }
+                    return name;
+                }
+            },
+            calculable: true,
+            series: [{
+                name: '',
+                type: 'pie',
+                radius: '55%',
+                center: ['50%', '60%'],
+                itemStyle: {
+                    normal: {
+                        label: {
+                            show: true,
+                            position: 'inner',
+                            formatter: '{d}%'
+                        }
+                    }
+
+                }
+            }]
+        };
+        //检测量
+        var Chartadd = echarts.init(document.getElementById('chart-check'),'walden');
+        Chartadd.setOption(pieoption);
+        //柱状图配置
+        baroption = {
+            grid:{
+                left:10,
+                right:10,
+                containLabel:true
+            },
+            xAxis: [{
+                type: 'category',
+                axisTick: {
+                    alignWithLabel: true
+                },
+                axisLabel: {
+                    interval: 0,
+                    rotate: 45
+				}
+            }],
+            yAxis: [{
+                type: 'value'
+            }],
+            series: [{
+                name: '柱状图',
+                type: 'bar',
+                barWidth: '60%',
+                itemStyle:{
+                    normal:{
+                        label: {
+                            show: true,
+                            position: 'top',
+                            formatter: '{c}%',
+                            color: '#333'
+                        }
+                    }
+                }
+            }]
+        }
+        //相似度结果分布图
+        var Chartregister = echarts.init(document.getElementById('chart-similarity'),'walden');
+        Chartregister.setOption(baroption);
+        
+        Chartregister.setOption({
+            xAxis: [{
+                data: ['0~10%', '10~20%', '20~30%', '30~40%', '40~50%', '50~60%', '60~70%','70~80%','80~90%','90~100%']
+            }],
+            series: [{
+                data: []
+            }]
+        });
+        $(document).ready(function(){
+        	//饼图数据数组
+        	var row = {};
+        	var row2 = {};
+        	//柱状图数据
+        	var chartregisterData = [];
+        	//机构检测量
+        	var chartregisterStuData = [];
+        	var chartregisterStuDate = [];
+        	//个人检测量
+        	var chartregisterIndData = [];
+        	var chartregisterIndDate = [];
+        	$.ajax({
+          		type:"post",
+          		url:"/statisticsController/getMonthCheckData.do",
+          		dataType:"json",
+          		success: function (data){
+          			//月检测量
+          			$("#total").text(data.data.checkCount)
+          			//个人检测
+           			$("#indDate").text(data.data.showDate);
+           			//机构检测
+           			$("#stuDate").text(data.data.showDate);
+          			//插入饼图数据
+          			row.value = data.data.personalCheckCount
+          			row.name = '个人';
+          			echartData.push(row)
+          			
+          			row2.value = data.data.orgCheckCount
+          			row2.name = '机构';
+          			echartData.push(row2)
+          			//初始化饼图
+          			 Chartadd.setOption({
+          				legend: {
+          	                data: ['个人', '机构']
+          	            },
+          				series: [{
+          	                data: echartData	
+          	            }]
+          	        });
+          			//插入柱状图数据（相似结果）
+          			for(var i = 0;i<data.data.checkGeneralRateDetails.length;i++){
+          				chartregisterData.push(data.data.checkGeneralRateDetails[i].count);
+          			}
+          			//初始化柱状图
+          			Chartregister.setOption({
+          	            series: [{
+          	                data: chartregisterData
+          	            }]
+          	        });
+          			//个人检测
+          			var num = 30;
+          			for(var i = 0;i<data.data.personalCheckDetails.length;i++){
+          				$("#indTable").prepend("<tr><td>"+num+"</td><td>"+data.data.personalCheckDetails[i].date+"</td><td>"+data.data.personalCheckDetails[i].count+"</td></tr>");
+          				num = parseInt(num)-1;
+          			}
+          			 //机构检测
+          			var num = 30;
+          			for(var i = 0;i<data.data.orgCheckDetails.length;i++){
+          				$("#stuTable").prepend("<tr><td>"+num+"</td><td>"+data.data.orgCheckDetails[i].date+"</td><td>"+data.data.orgCheckDetails[i].count+"</td></tr>");
+          				num = parseInt(num)-1;
+          			}
+          		 }
+      	 		});
+        	});         
+    </script>
+</body>
+
+</html>

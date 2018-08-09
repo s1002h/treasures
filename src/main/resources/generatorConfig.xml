@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+	<classPathEntry
+		location="D:/maven/mvnRespo/mysql/mysql-connector-java/5.1.31/mysql-connector-java-5.1.31.jar" />
+
+	<context id="context1">
+		<jdbcConnection
+			connectionURL="jdbc:mysql://120.25.87.180:3306/vipbanlv?useUnicode=true&amp;characterEncoding=utf-8&amp;autoReconnectForPools=true"
+			driverClass="com.mysql.jdbc.Driver" password="love!vipbanlvcom!"
+			userId="ancao" />
+		<javaModelGenerator targetPackage="com.ancao.treasures.bean"
+			targetProject="D:\work\workspaceGocheck\treasures\src\main\java" />
+		<sqlMapGenerator targetPackage="mapper"
+			targetProject="D:\work\workspaceGocheck\treasures\src\main\resources" />
+		<javaClientGenerator targetPackage="com.ancao.treasures.mapper"
+			targetProject="D:\work\workspaceGocheck\treasures\src\main\java"
+			type="XMLMAPPER" />
+
+		<!-- <table tableName="treasures_codename"></table> -->
+		<!-- <table tableName="treasures_hotlink"></table> -->
+		<table tableName="treasures_video"></table>
+		<!-- <table tableName="treasures_user"></table> -->
+<!-- 		<table tableName="treasures_order"></table> -->
+	</context>
+</generatorConfiguration>

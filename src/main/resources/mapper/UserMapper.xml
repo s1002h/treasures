@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ancao.treasures.mapper.UserMapper">
+	<resultMap type="com.ancao.treasures.bean.UserBean" id="userResultBean">
+		<id property="userId" column="USERID" />
+		<result property="loginId" column="LOGINID" />
+		<result property="passWord" column="PASSWORD" />
+		<result property="userName" column="USERNAME" />
+		<result property="mobile" column="MOBILE" />
+		<result property="phone" column="PHONE" />
+		<result property="email" column="EMAIL" />
+		<result property="address" column="ADDRESS" />
+		<result property="branchId" column="BRANCHID" />
+		<result property="branchName" column="BRANCHNAME" />
+		<result property="positionId" column="POSITIONID" />
+		<result property="positionName" column="POSITIONNAME" />
+		<result property="state" column="STATE" />
+		<result property="beginDate" column="BEGINDATE" />
+		<result property="endDate" column="ENDDATE" />
+		<result property="memo" column="MEMO" />
+		<result property="loginErrCount" column="LOGINERRCOUNT" />
+	</resultMap>
+	
+	<select id="getUserByLoginName" resultMap="userResultBean">
+		SELECT
+		U.USERID,U.LOGINID,U.PASSWORD,U.USERNAME,U.BRANCHID,U.POSITIONID,U.MOBILE,U.PHONE,U.EMAIL,
+		U.ADDRESS,U.CREATEDATE,U.STATE,U.USERTYPE,U.MEMO,U.BEGINDATE,U.ENDDATE,U.LOGINERRCOUNT,
+		B.BRANCHNAME,P.POSITIONNAME
+		FROM T_SYS_USERINFO U,T_SYS_BRANCH B,T_SYS_POSITION P WHERE
+		U.BRANCHID = B.BRANCHID AND U.POSITIONID = P.POSITIONID
+		AND U.LOGINID = #{loginId}
+	</select>
+	
+	<select id="getAuthList" parameterType="String" resultType="hashmap">
+		SELECT a.USERID,b.ROLEID,b.AUTHID FROM t_sys_userrole a
+		JOIN t_sys_roleauth b ON a.ROLEID=b.ROLEID AND a.USERID = #{USERID}
+	</select>
+</mapper>
