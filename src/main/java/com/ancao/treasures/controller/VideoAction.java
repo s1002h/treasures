@@ -130,6 +130,7 @@ public class VideoAction extends BaseController {
 			videoDataEx.setWeburl(null);
 			videoDataEx.setUpdtime(null);
 			videoDataEx.setVideoflag(null);
+			videoDataEx.setJointurl(null);
 			videos.add(videoDataEx);
 		}
 		jsonObject.put("data", videos);
@@ -181,6 +182,7 @@ public class VideoAction extends BaseController {
 			videoDataEx.setWeburl(null);
 			videoDataEx.setUpdtime(null);
 			videoDataEx.setVideoflag(null);
+			videoDataEx.setJointurl(null);
 			videos.add(videoDataEx);
 		}
 		JSONObject jsonObject = getResultOKJSONObject();
@@ -206,7 +208,7 @@ public class VideoAction extends BaseController {
 			TreasuresVideo video = treasuresVideoMapper.selectByPrimaryKey(Integer.valueOf(videoId));
 			JSONObject jsonObject = getResultOKJSONObject();
 			// TODO 处理url
-			jsonObject.put("videoUrl", video.getVideourl());
+			jsonObject.put("videoUrl", video.getJointurl()+video.getVideourl());
 			writeOkToResponse(jsonObject);
 		} else {
 			writeERRToResponse("未购买！");
